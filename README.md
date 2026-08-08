@@ -52,13 +52,13 @@ NINE.PRG automatically, then exits.
 C:\NINE>nine -r
 
 A note should be made regarding the Ctrl
-+ Break keys.  Ctrl + Break is arguably
+Break keys.  Ctrl Break is arguably
 one of the most important keys in the
 IDE.  It is used to interrupt a
 compiling, running, uploading or
 downloading program.  The original IBM
-Model M 101-key keyboard mapped Ctrl +
-Break to Ctrl + Scroll Lock.  Modern
+Model M 101-key keyboard mapped Ctrl
+Break to Ctrl Scroll Lock.  Modern
 keyboards rarely have a dedicated
 "break" key anymore.  Modern laptop
 manufactures "map" the older and rarely
