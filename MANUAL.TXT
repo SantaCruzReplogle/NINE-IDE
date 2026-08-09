@@ -481,11 +481,11 @@ ________________________________________
     find: _
 
 Type the string to locate and press
-Enter.  Lone spaces is not valid search
-string.  Find is case-sensitive and does
-not wrap around.  It runs forward from
-the cursor's position to the end, then
-stops.
+Enter.  Lone spaces is not a valid
+search string.  Find is case-sensitive
+and does not wrap around.  It runs
+forward from the cursor's position to
+the end, then stops.
 
 ^L repeats the last search from the
 cursor's position, forward only. There
@@ -1183,7 +1183,7 @@ All values are 16-bit signed integers
 (-32768 to 32767).  One character is one
 16-bit integer.
 
-Memory is addressed in BYTES, but
+Memory is addressed in bytes, but
 indexing through [ ] is word-scaled.
 The array arr[i] lives in byte address
 arr + i * 2.
@@ -1639,7 +1639,8 @@ initializers may be any expression:
   var row2 = SCREEN_MEM + 40
 
   // local expression
-  func draw_row() {
+  func draw_row()
+  {
     var key = wait_key()
     var cell = screen[key]
   }
@@ -4171,9 +4172,7 @@ func get_key()
 }
 
 func clear_screen()
-{
   sys_call(SYS_CLEAR_SCREEN)
-}
 
 func goto_xy(x, y)
 {
@@ -4227,7 +4226,6 @@ var ang_x
 var ang_y
 
 func sine(i)
-{
   return {
     0,  3,  6,  9, 12, 15, 18, 21,
     24, 27, 29, 31, 33, 34, 35, 36,
@@ -4238,30 +4236,23 @@ func sine(i)
     -36,-36,-35,-34,-33,-31,-29,-27,
     -24,-21,-18,-15,-12, -9, -6, -3
     }[i & SIN_MASK]
-}
 
 func cosine(i)
-{
   return sine(16 - i)
-}
 
 func draw_line(x0, y0, x1, y1, c)
 {
   var dx, dy, sx, sy, err, e2
 
-  if (x1 > x0) {
+  if (x1 > x0)
     let dx = x1 - x0, sx = 1
-  }
-  else {
+  else
     let dx = x0 - x1, sx = -1
-  }
 
-  if (y1 > y0) {
+  if (y1 > y0)
     let dy = y1 - y0, sy = 1
-  }
-  else {
+  else
     let dy = y0 - y1, sy = -1
-  }
 
   let err = dx - dy
 
@@ -4450,9 +4441,7 @@ func get_key()
 }
 
 func put_char(c)
-{
   sys_call(SYS_PUT_CHAR, &c)
-}
 
 func read_timer()
 {
@@ -4484,12 +4473,10 @@ func send_com(c)
 }
 
 func put_str(str)
-{
   while (str[0]) {
     put_char(str[0])
     inc str, str
   }
-}
 
 func delay(ticks)
 {
@@ -4622,9 +4609,7 @@ func wait_key()
 }
 
 func clear_screen()
-{
   sys_call(SYS_CLEAR_SCREEN)
-}
 
 func put_char_xy(c, x, y)
 {
@@ -4731,9 +4716,7 @@ var sys_call[5] = {
 }
 
 func exit()
-{
   sys_call(SYS_EXIT)
-}
 
 func key_ready()
 {
@@ -4789,9 +4772,7 @@ func read_timer()
 }
 
 func set_timer(timer)
-{
   sys_call(SYS_SET_TIMER, &timer)
-}
 
 func com_status()
 {
@@ -4810,9 +4791,7 @@ func read_com()
 }
 
 func send_com(c)
-{
   sys_call(SYS_SEND_COM, &c)
-}
 
 func peek_addr(sys, addr)
 {
@@ -4834,28 +4813,20 @@ func poke_addr(sys, addr, num)
 }
 
 func peek_eeprom(addr)
-{
   return peek_addr(SYS_PEEK_EEPROM,
                    addr)
-}
 
 func poke_eeprom(addr, num)
-{
     poke_addr(SYS_POKE_EEPROM,
               addr, num)
-}
 
 func peek_scratch(addr)
-{
   return peek_addr(SYS_PEEK_SCRATCH,
                    addr)
-}
 
 func poke_scratch(addr, num)
-{
     poke_addr(SYS_POKE_SCRATCH,
               addr, num)
-}
 
 /* Helper functions */
 
@@ -4872,10 +4843,8 @@ func wait_key()
 }
 
 func flush_keys()
-{
   while (key_ready())
     get_key()
-}
 
 func backspace()
 {
@@ -4885,12 +4854,10 @@ func backspace()
 }
 
 func put_str(str)
-{
   while (str[0]) {
     put_char(str[0])
     inc str, str
   }
-}
 
 func put_int(n)
 {
