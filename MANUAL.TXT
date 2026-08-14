@@ -1,7 +1,7 @@
 
                   Nine
    Integrated Development Environment
-              Version 1.02
+              Version 1.10
 
         TEXT EDITOR AND LANGUAGE
             REFERENCE MANUAL
@@ -129,7 +129,7 @@ section instead of splitting.
        |
        |
        |
- xx99  |    while (1) { // filled
+ xx99  |    while 1 { // filled
        +---
 
 Why?  In order to insert, line xx99
@@ -299,7 +299,7 @@ forces itself into the next line.
          (no inserting possible)       X
                                        ^
                                        |
-                                  filled
+                                (filled)
 
 Why?  Since there are no new lines
 terminators (Part 2), a character pushed
@@ -399,7 +399,7 @@ empty line moves the cursor to column 0.
 
         ^
         |
-   lands here
+   (lands here)
 
 
 DELETION
@@ -805,21 +805,13 @@ temporary space in the text memory area
 is not available.  The clipboard and
 undo buffers use code memory as storage.
 Before compiling begins, the IDE makes
-an attempt to preserve the data by
-moving the clipboard and undo data into
-leftover text memory with priority given
-to the clipboard.  If however that
-memory is close to being full, the
-clipboard and/or undo text is lost.  The
-clipboard buffer holds the number of
-lines marked multiplied by the screen
-width in bytes.  The line undo buffer
-holds exactly 4000 bytes (100 times the
-screen's width) before the data is
-compressed to around 70% it's size.  If
-there's at least that much (give or
-take), one or both buffers will be
-spared.
+an attempt to preserve them by moving a
+compressed version the clipboard and
+undo data into leftover text memory with
+priority given to the clipboard.  If,
+however, that memory is close to being
+full, the clipboard and/or undo text is
+lost without warning.
 
 
 ________________________________________
@@ -1182,7 +1174,7 @@ language's built-in keywords:
 NUMERIC LITERALS
 
   42              /* decimal     */
-  0xDEAD          /* hexadecimal */
+  0xBEEF          /* hexadecimal */
   0o777           /* octal       */
   0b10110100      /* binary      */
   'A'             /* character   */
@@ -1295,7 +1287,7 @@ The "sum" example:
   {
     var total
 
-    while (size) {
+    while size {
       dec size
       let total = total +
                   arr[size]
@@ -1342,7 +1334,7 @@ inside a function:
   {
     var best = {0, 0, 0}
 
-    if (score > best[0])
+    if score > best[0]
       let best[0] = score
 
     /*
@@ -1732,7 +1724,7 @@ FUNCTIONS (func)
     var fib
     let fib = func (n)
     {
-      if (n <= 1)
+      if n <= 1
         return n
       return fib(n - 1) + fib(n - 2)
     }
@@ -1825,7 +1817,7 @@ captures no local variables.
     {
       var arr[1000], i
 
-      while (i != 1000) {
+      while i != 1000 {
           let arr[i] = i
           inc i
       }
@@ -1892,7 +1884,7 @@ workaround.
 
   var fact = func (n, fn)
   {
-    if (n <= 1)
+    if n <= 1
       return 1
 
     return n * fn(n - 1, fn)
@@ -1911,7 +1903,7 @@ Another example...
     var power
     let power = func (b, e)
     {
-      if (e <= 0)
+      if e <= 0
         return 1
 
       return b * power(b, e - 1)
@@ -1932,7 +1924,7 @@ the variable on the left can hold it.
     // error
     var power = func (b, e)
     {
-      if (e <= 0)
+      if e <= 0
         return 1
 
       // error: name not defined
@@ -1976,7 +1968,7 @@ allowed.
 
   func (a)
   {
-    if (a == 0) {
+    if !a {
        var a = 123
        // error: name already defined
     }
@@ -2053,7 +2045,7 @@ Another example:
     {
       var i
 
-      while (i != 1000) {
+      while i != 1000 {
           let arr[i] = 0xFFFF
           inc i
       }
@@ -2236,31 +2228,87 @@ the same amount of code space.
 
 IF / ELSE
 
-  if (cond) statement
-  if (cond) statement else statement
+  if cond
+    statement(s)
 
-The if statement executes the following
-code block if (cond) evaluates to
-non-zero, and skips it if zero.  The
-body may be a single statement or an
-enclosed block.  "else" binds to the
-nearest preceding "if".
+  if cond
+    statement(s)
+  else
+    statement(s)
+
+The if-statement executes the following
+code block if cond (an expression)
+evaluates to non-zero, and skips it if
+zero.  The body may be a single
+statement or an enclosed block.  "else"
+binds to the nearest preceding "if".
 
 
-WHILE
+WHILE / ELSE
 
-  while (cond) statement
-  while (cond) { statements }
+  while cond
+    statement(s)
+  else
+    statements(s)
+
+The while-statement executes the
+following code block continuously if
+cond evaluates to non-zero, and skips it
+if zero.  The body may be a single
+statement or an enclosed block.  "else"
+binds to the nearest preceding "while".
+
+  var i
+
+  while i < 5 {
+    inc i
+    put_int(i)
+    new_line()
+  }
+  else
+    put_str("Done!")
+
+Prints:
+
+1
+2
+3
+4
+5
+Done!
 
 
 DO-WHILE
 
-  do statement while (cond)
-  do { statements } while (cond)
+  do
+    statement(s)
+  while cond
 
-While and do-while loops operate as
-expected, repeating statement execution
-until the condition is false.
+Do-while loops operate as expected,
+repeating statement execution until the
+condition is false.
+
+
+LOOP
+
+  loop
+    statements(s)
+
+Loop executes the following code block
+continuously.  The body may be a single
+statement or an enclosed block.  The
+statement is equivalent to "while (1)".
+
+  var i
+
+  loop {
+    inc i
+
+    if i == 5
+      break
+  }
+
+  put_int(i) // prints 5
 
 
 RETURN
@@ -2357,9 +2405,9 @@ BREAK and CONTINUE example
   {
     var i, words
 
-    while (line[i]) {
+    while line[i] {
       // skip runs of spaces
-      if (line[i] == ' ') {
+      if line[i] == ' ' {
         inc i
         continue
       }
@@ -2368,8 +2416,8 @@ BREAK and CONTINUE example
       if (words == 20)
         break
 
-      while (line[i] &&
-             line[i] != ' ')
+      while line[i] &&
+            line[i] != ' '
         inc i
 
       inc words
@@ -2527,7 +2575,7 @@ Example:
     var fact
     let fact = func (n)
     {
-      if (n <= 1)
+      if n <= 1
           return 1
       return n * fact(n - 1)
     }
@@ -2686,7 +2734,7 @@ Compared to this:
   put_str("Enter command:")
   input_str(str)
 
-  while (str[0]) {
+  while str[0] {
     // process command here
 
     // duplicate code
@@ -2717,7 +2765,7 @@ then:
 compared to:
 
   new_command(str)
-  while (str[0]) {
+  while str[0] {
     // process command here
     new_command(str)
   }
@@ -2765,7 +2813,7 @@ Arithmetic wraps silently on overflow.
 Addition overflow can be detected by
 hand when b is not negative:
 
-  if (b >= 0 && a + b < a) {
+  if b >= 0 && a + b < a {
     // handle overflow here
   }
 
@@ -3045,7 +3093,7 @@ also contain its own loop.
 
   func poll()
   {
-    while (1) {
+    loop {
       func check()
       {
         // error
@@ -3063,7 +3111,7 @@ Functions may have up to 127 parameters.
 
 FUNCTION DEPTH
 
-Nested functions are limited to four
+Nested functions are limited to three
 levels (not including the parent
 function.)
 
@@ -3321,6 +3369,7 @@ SYS_SEND_COM, and to the editor's ^K U /
 ^K D commands (see Editor Reference,
 Part 9).
 
+
 EEPROM
 
 EEPROM is an area of 512 16-bit
@@ -3333,23 +3382,24 @@ error:
 
 Example:
 
-  poke_eeprom(511, 99)
+  poke_eeprom(511, 9999)
   put_int(peek_eeprom(511))
-  // prints 99
+  // prints 9999
 
 Writing to EEPROM memory is slow and has
 a limited number of writes, usually
 around 100,000 before the memory begins
 to degrade.  It is meant to be used
-sparingly, specifically for data that
-changed infrequently.
+sparingly for data that changed
+infrequently.
 
 Any value written to an EEPROM memory
 address is internally verified with a
-read.  The following error occurs if the
-values do not match.
+read-back.  The following error occurs
+if the values do not match.
 
   EEPROM parity error
+
 
 SCRATCH RAM
 
@@ -3363,9 +3413,9 @@ results in the runtime error:
 
 Example:
 
-  poke_scratch(2047, 99)
+  poke_scratch(2047, 0x9999)
   put_int(peek_scratch(2047))
-  // prints 99
+  // prints -26215
 
 
 HALTING A RUNNING PROGRAM
@@ -3420,9 +3470,9 @@ PRINT A STRING
   {
     var i
 
-    while (s[i]) {
+    while s[i] {
       put_char(s[i])
-      let i = i + 1
+      int i
     }
   }
 
@@ -3430,17 +3480,17 @@ PRINT A STRING
 PRINT A SIGNED INTEGER
 
   func put_int(n) {
-    if (n == -32768) {
+    if n == -32768 {
       put_str("-32768")
       leave
     }
 
-    if (n < 0) {
+    if n < 0 {
       put_char('-')
       let n = -n
     }
 
-    if (n >= 10)
+    if n >= 10
       put_int(n / 10)
     put_char('0' + n % 10)
   }
@@ -3474,7 +3524,7 @@ a global:
 
   func is_even(n)
   {
-    if (n == 0)
+    if n == 0
       return 1
 
     return _is_odd(n - 1)
@@ -3482,7 +3532,7 @@ a global:
 
   func is_odd(n)
   {
-    if (n == 0)
+    if n == 0
       return 0
 
     return is_even(n - 1)
@@ -3545,7 +3595,7 @@ doubling is automatic.
   func str_copy(dst, src) {
     var i
 
-    while (src[i]) {
+    while src[i] {
       let dst[i] = src[i]
       let i = i + 1
     }
@@ -3561,7 +3611,7 @@ pointers advance by 2.  Parameters are
 ordinary locals and may be reassigned.
 
   func str_copy(dst, src) {
-    while (src[0]) {
+    while src[0] {
       let dst[0] = src[0]
 
       let src = src + 2
@@ -3582,7 +3632,7 @@ or
   func str_copy(dst, src) {
     var i
 
-    while ((src + i)[0]) {
+    while (src + i)[0] {
       let (dst + i)[0] =
         (src + i)[0]
       let i = i + 2
@@ -3788,7 +3838,7 @@ eight per function.
 Adding one more nested statement or
 nested block results in the error:
 
-  too many nest statements
+  too many nested statements
 
 Nested statements also max-out at eight
 per top-level function, that is, the
@@ -4011,7 +4061,7 @@ func hello()
   var str = "Hello World!"
   var c, i
 
-  while (str[i]) {
+  while str[i] {
     sys_call(SYS_PUT_CHAR, &str[i])
     inc i
   }
@@ -4040,7 +4090,7 @@ func hello()
 
   func put_str(s)
   {
-    while (s[0]) {
+    while s[0] {
       func put_char(c)
         sys_call(
           SYS_PUT_CHAR,
@@ -4062,7 +4112,7 @@ func hello()
     do
       sys_call(SYS_KEY_READY,
                &c)
-    while (!c)
+    while !c
 
     sys_call(SYS_GET_KEY, &c)
   }
@@ -4153,8 +4203,8 @@ func delay(ticks)
 {
   var start_tics = read_timer()
 
-  while (read_timer() - start_tics <
-    ticks) {
+  while read_timer() - start_tics <
+    ticks {
   }
 }
 
@@ -4192,32 +4242,32 @@ func draw_line(x0, y0, x1, y1, c)
 {
   var dx, dy, sx, sy, err, e2
 
-  if (x1 > x0)
+  if x1 > x0
     let dx = x1 - x0, sx = 1
   else
     let dx = x0 - x1, sx = -1
 
-  if (y1 > y0)
+  if y1 > y0
     let dy = y1 - y0, sy = 1
   else
     let dy = y0 - y1, sy = -1
 
   let err = dx - dy
 
-  while (1) {
+  loop {
     put_char_xy(c, x0, y0)
 
-    if (x0 == x1 && y0 == y1)
+    if x0 == x1 && y0 == y1
       break
 
     let e2 = err * 2
 
-    if (e2 > -dy) {
+    if e2 > -dy {
       let err = err - dy
       let x0  = x0 + sx
     }
 
-    if (e2 < dx) {
+    if e2 < dx {
       let err = err + dx
       let y0  = y0 + sy
     }
@@ -4232,20 +4282,20 @@ func project_vertices(ax, ay)
   var sy_r = sine(ay)
   var v
 
-  while (v < 8) {
+  while v < 8 {
     var px, py, pz
 
-    if (v & 1)
+    if v & 1
       let px =  CUBE_R
     else
       let px = -CUBE_R
 
-    if (v & 2)
+    if v & 2
       let py =  CUBE_R
     else
       let py = -CUBE_R
 
-    if (v & 4)
+    if v & 4
       let pz =  CUBE_R
     else
       let pz = -CUBE_R
@@ -4261,7 +4311,7 @@ func project_vertices(ax, ay)
       py * sx_r) ~> 5
 
     var z_off = rz2 + DIST
-    if (z_off < 8)
+    if z_off < 8
       let z_off = 8
 
     let vx[v] = (rx  * FOCAL
@@ -4307,7 +4357,7 @@ func cube()
 {
   goto_xy(-1, -1)
 
-  while (!key_ready()) {
+  while !key_ready() {
     project_vertices(
       ang_x,
       ang_y)
@@ -4356,12 +4406,6 @@ enum {
   SYS_COM_STATUS,
   SYS_READ_COM,
   SYS_SEND_COM,
-
-  SYS_PEEK_EEPROM,
-  SYS_POKE_EEPROM,
-
-  SYS_PEEK_SCRATCH,
-  SYS_POKE_SCRATCH,
 }
 
 var sys_call[5] = {
@@ -4421,7 +4465,7 @@ func send_com(c)
 }
 
 func put_str(str)
-  while (str[0]) {
+  while str[0] {
     put_char(str[0])
     inc str, str
   }
@@ -4430,8 +4474,8 @@ func delay(ticks)
 {
   var start_tics = read_timer()
 
-  while (read_timer() - start_tics <
-    ticks) {
+  while read_timer() - start_tics <
+    ticks {
   }
 }
 
@@ -4439,7 +4483,7 @@ func send_str(str)
 {
   var i
 
-  while (str[i]) {
+  while str[i] {
     send_com(str[i])
     inc i
   }
@@ -4469,21 +4513,21 @@ func term()
 
   send_str("AT\r")
 
-  while (1) {
+  loop {
     var c
 
-    if (com_status()) {
+    if com_status() {
       let c = read_com()
 
-      if (c)
+      if c
         put_char(c)
     }
 
-    if (key_ready()) {
+    if key_ready() {
       let c = get_key()
 
-      if (c) {
-        if (c == '\e')
+      if c {
+        if c == '\e'
           break
 
         send_com(c)
@@ -4550,7 +4594,7 @@ func get_key()
 
 func wait_key()
 {
-  while (!key_ready()) {
+  while !key_ready() {
   }
 
   return get_key()
@@ -4573,17 +4617,17 @@ func mandel(cr, ci)
 {
   var zr, zi, zr2, zi2, n
 
-  while (n < MAXITER) {
-    if (zr > LIMIT || zr < -LIMIT)
+  while n < MAXITER {
+    if zr > LIMIT || zr < -LIMIT
       break
 
-    if (zi > LIMIT || zi < -LIMIT)
+    if zi > LIMIT || zi < -LIMIT
       break
 
     let zr2 = (zr * zr) ~> FBITS
     let zi2 = (zi * zi) ~> FBITS
 
-    if (zr2 + zi2 >= FOUR)
+    if zr2 + zi2 >= FOUR
       break
 
     let zi = ((zr * zi) ~> HALF) + ci
@@ -4599,11 +4643,11 @@ func plot()
 {
   var py
 
-  while (py < ROWS) {
+  while py < ROWS {
     var px = 0
     var ci = Y0 + py * DY
 
-    while (px < COLS) {
+    while px < COLS {
       var n = mandel(X0 + px * DX, ci)
 
       put_char_xy(shades[n], px, py)
@@ -4785,14 +4829,14 @@ var seed
 
 func wait_key()
 {
-  while (!key_ready()) {
+  while !key_ready() {
   }
 
   return get_key()
 }
 
 func flush_keys()
-  while (key_ready())
+  while key_ready()
     get_key()
 
 func backspace()
@@ -4803,21 +4847,21 @@ func backspace()
 }
 
 func put_str(str)
-  while (str[0]) {
+  while str[0] {
     put_char(str[0])
     inc str, str
   }
 
 func put_int(n)
 {
-  if (n == -32768)
+  if n == -32768
     put_str("-32768")
-  else if (n < 0) {
+  else if n < 0 {
     put_char('-')
     put_int(-n)
   }
   else {
-    if (n >= 10)
+    if n >= 10
       put_int(n / 10)
 
     put_char('0' + n % 10)
@@ -4832,31 +4876,31 @@ func input_str(str, len)
   do {
     let c = wait_key()
 
-    if (c >= ' ' && c <= 127) {
-      if (i < len) {
+    if c >= ' ' && c <= 127 {
+      if i < len {
         let str[i] = c
         put_char(c)
 
         inc i
       }
     }
-    else if (c == '\b') {
-      if (i) {
+    else if c == '\b' {
+      if i {
         backspace()
         dec i
       }
     }
-    else if (c == 27) {
-      if (!i)
+    else if c == 27 {
+      if !i
         break
 
-      while (i) {
+      while i {
         backspace()
         dec i
       }
     }
   }
-  while (c != '\r')
+  while c != '\r'
 
   let str[i] = '\0'
   return i
@@ -4864,7 +4908,7 @@ func input_str(str, len)
 
 func put_hex(n)
 {
-  if (n & 0xFFF0)
+  if n & 0xFFF0
     put_hex(n >> 4)
 
   put_char(hex_chars[n & 15])
@@ -4878,7 +4922,7 @@ func new_line()
 
 func set_seed(s)
 {
-  if (s)
+  if s
     let seed = s
   else
     let seed = read_timer() | 1
@@ -4900,8 +4944,8 @@ func delay(ticks)
 {
   var start_tics = read_timer()
 
-  while (read_timer() - start_tics <
-    ticks) {
+  while read_timer() - start_tics <
+    ticks {
   }
 }
 
@@ -5018,7 +5062,7 @@ func scale(v) {
 RECURSION
 
 func fact(n) {
-  if (n <= 1) { return 1 }
+  if n <= 1 { return 1 }
   return n * fact(n - 1)
 }
 
@@ -5063,19 +5107,25 @@ func this_runs_last() { }
 
 CONDITIONALS
 
-if (x > 0) let y = 1
+if x > 0 let y = 1
 else let y = -1
 
-if (x > 0) { let y = 1 }
+if x > 0 { let y = 1 }
 else { let y = -1 }
 
 LOOPS
 
-while (i < 10) { inc i }
-while (i < 10) inc i
+while i < 10 { inc i }
+while i < 10 inc i
 
-do { inc i } while (i < 10)
-do inc i while (i < 10)
+while i < 10 inc i
+else put_str("Done!")
+
+do { inc i } while i < 10
+do inc i while i < 10
+
+loop { inc i }
+loop inc i
 
 LOOP/FUNCTION CONTROL
 
