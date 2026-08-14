@@ -21,7 +21,7 @@ you'll enter the text editor where
 programs are entered and run.  The IDE
 does not accept plain text files.
 Instead the included utility CONVERT.COM
-translates text files into a compressed
+translates a text file into a compressed
 format, then writes to file NINE.PRG.
 
 C:\NINE>convert cube.txt
@@ -48,21 +48,15 @@ reference manual.  The file is too large
 to convert and read in Nine.  It will
 need to be broken down in order to fit.
 
-Nine's one command line option, -r, runs
-NINE.PRG automatically, then exits.
+Nine's one command line option, -r or
+/r, runs NINE.PRG automatically, then
+exits.
 
 C:\NINE>nine -r
 
-
-Serial communications via nullmodem
-under DOSBox should set "transparent" to
-1.
-
-  serial1 = nullmodem ... transparent:1
-
 A note should be made regarding the Ctrl
 + Break keys.  Ctrl + Break is arguably
-one of the most important keys in the
+one of the most important feature in the
 IDE.  It is used to interrupt a
 compiling, running, uploading or
 downloading program.  The original IBM
@@ -85,7 +79,12 @@ compatible operating systems like
 FreeDOS or Real DOS do provide simple
 remapping tools that change how the
 physical buttons on a keyboard behave.
-Good luck!
+
+For DOSBox users, serial communications
+via null modem should set "transparent"
+to 1.
+
+  serial1 = nullmodem ... transparent:1
 
 Bugs, comments or questions?
 Contact:
