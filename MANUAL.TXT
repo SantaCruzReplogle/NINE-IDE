@@ -68,7 +68,7 @@ Tab, all have a control-key counterpart,
 and work where they are shown.  Either
 form may be used.  A single control
 letter is used for common actions, and
-two-key combos like "^Q ..." are used
+dual-key combos like "^Q ..." are used
 for extended movement, and "^K ..." for
 block and file commands.
 
@@ -262,7 +262,7 @@ ________________________________________
  ^Q X   ^End        Bottom of page
  ^Q R   ^PgUp       Top of section
  ^Q C   ^PgDn       Bottom of section
- ^Q G               Goto last full
+ ^Q G               Go to last full
                     section
 
  ^J                 Jump to a line
@@ -426,7 +426,7 @@ section boundary.
 WORD DELETION
 
 ^T deletes from the cursor through the
-next word and any trailing whitespace.
+next word and any trailing whitespaces.
 If the cursor is on a non-alphanumeric,
 non-whitespace character (e.g. "$" or
 "&"), only that single character is
@@ -588,10 +588,12 @@ single section, the paste step is not.
 
 RESET
 
-The clipboard is cleared before compile
-(^K T) and run (^K R) if temporary
-storage is not available.  This occurs
-without warning.
+The clipboard is erased with a prompted
+conformation before compile (^K T) and
+run (^K R) if temporary storage is not
+available (see Part 10).
+
+  Erase clipboard?
 
 The mark state (^) (the first mark) is
 also reset if a line is inserted above
@@ -648,12 +650,13 @@ for a later attempt.
 
 RESET
 
-The undo buffer is cleared before
+The undo buffer is cleared with a
+prompted conformation before
 compile (^K T) and run (^K R) if
 temporary storage is not available.
-Again, the undo buffer is not cleared by
+The undo buffer is not cleared by
 saving, loading, uploading or
-downloading.
+downloading (see Part 10).
 
 
 ________________________________________
@@ -800,18 +803,23 @@ occurred.
 SIDE EFFECTS
 
 ^K R and ^K T reset the clipboard and
-undo buffers (see Parts 7 and 8) IF
+undo buffers (see Parts 7 and 8) if
 temporary space in the text memory area
 is not available.  The clipboard and
 undo buffers use code memory as storage.
-Before compiling begins, the IDE makes
-an attempt to preserve them by moving a
-compressed version the clipboard and
-undo data into leftover text memory with
-priority given to the clipboard.  If,
-however, that memory is close to being
-full, the clipboard and/or undo text is
-lost without warning.
+Before compiling begins, the IDE tries
+to preserve them by moving a compressed
+version of each into leftover text
+memory with priority given to the
+clipboard.  Two prompts appear if either
+cannot fit.
+
+  Erase clipboard?
+  Erase undo?
+
+Pressing any key but 'Y' aborts the
+compile or run, and both erasures (even
+if 'Y' was chosen on the first.)
 
 
 ________________________________________
@@ -917,7 +925,7 @@ ________________________________________
 STARTUP
 
     EEPROM parity error
-    file error
+    file error (corrupted)
     out of text memory
 
 
@@ -936,7 +944,8 @@ EDITING
 FILE AND TRANSFERS
 
     download failed
-    file error
+    file error (save)
+    file not found
     upload failed
 
 
@@ -1063,16 +1072,16 @@ ________________________________________
 
 This reference describes the Nine
 programming language.  It's a typeless,
-procedural programming language, where
+procedural programming language where
 every value is a signed 16-bit word
 stored in little-endian format.  There
 are no other data types.  Addresses,
-strings, characters, booleans, scalars,
-arrays and function pointers are all
-numbers.  There is no type-safety and no
-array bounds checking.  Extensive guards
-are in place to ensure stack, code and
-data overruns produce meaningful runtime
+strings, characters, scalars, arrays and
+function pointers are all numbers.
+There is no type-safety and no array
+bounds checking.  Extensive guards are
+in place to ensure stack, code and data
+overruns produce meaningful runtime
 error messages.
 
 This document is not meant to be a
@@ -1167,8 +1176,8 @@ language's built-in keywords:
   enum        func
   if          inc
   leave       let
-  return      var
-  while
+  loop        return
+  var         while
 
 
 NUMERIC LITERALS
@@ -1241,7 +1250,7 @@ Adjacent string literals are joined
 string may span lines:
 
   let banner =
-    "Nine IDE v1.01\r\n"
+    "Nine IDE v1.10\r\n"
     "Press Esc to quit\r\n"
 
 String literals are "mutable".  Unlike
@@ -1415,7 +1424,7 @@ the right side of a 'let' or as part of
 a declaration initializer, the ambiguity
 does not arise because an expression is
 expected and the parentheses are not
-needed:
+needed.
 
   /*
   Fine without parens because
@@ -1633,7 +1642,7 @@ its own.
 
 Just like local variable declarations,
 local arrays declared with a size are
-re-initialized on every call.  They are
+reinitialized on every call.  They are
 "copied" into the frame, and are not
 persistent the way strings and
 anonymous arrays are.
@@ -1734,27 +1743,13 @@ A function body is either a single
 statement or a brace-enclosed block.
 Single-statement bodies need no braces.
 
-The "var" keyword on the return type and
-on parameters is optional decoration.
-Every value is a 16-bit word regardless.
-
-  func var add(var a, var b)
-  {
-    return a + b
-  }
-
-  func add(a, b)
-  {
-    return a + b
-  }
-
 Recursion is supported.  Locals are
 fresh on every call.  Scalars and sized
 arrays are reinitialized from their
 declarations.
 
 A local declaration inside a loop body
-is re-initialized on every iteration,
+is reinitialized on every iteration,
 not once per call.
 
 Parameter counts are not checked at
@@ -1818,7 +1813,7 @@ captures no local variables.
       var arr[1000], i
 
       while i != 1000 {
-          let arr[i] = i
+          let arr[i] = 0xFAF0
           inc i
       }
     }
@@ -1921,14 +1916,13 @@ the variable on the left can hold it.
 
   func start()
   {
-    // error
     var power = func (b, e)
     {
       if e <= 0
         return 1
 
-      // error: name not defined
       return b * power(b, e - 1)
+      // name not defined
     }
 
     put_int(power(2, 10))
@@ -2046,7 +2040,7 @@ Another example:
       var i
 
       while i != 1000 {
-          let arr[i] = 0xFFFF
+          let arr[i] = 0x0FAF
           inc i
       }
     }
@@ -2240,8 +2234,9 @@ The if-statement executes the following
 code block if cond (an expression)
 evaluates to non-zero, and skips it if
 zero.  The body may be a single
-statement or an enclosed block.  "else"
-binds to the nearest preceding "if".
+statement or an enclosed block.  The
+optional "else" statement binds to the
+nearest preceding "if".
 
 
 WHILE / ELSE
@@ -2251,12 +2246,13 @@ WHILE / ELSE
   else
     statements(s)
 
-The while-statement executes the
+The while statement executes the
 following code block continuously if
 cond evaluates to non-zero, and skips it
 if zero.  The body may be a single
-statement or an enclosed block.  "else"
-binds to the nearest preceding "while".
+statement or an enclosed block.  The
+optional "else" statement binds to the
+nearest preceding "while".
 
   var i
 
@@ -2297,7 +2293,7 @@ LOOP
 Loop executes the following code block
 continuously.  The body may be a single
 statement or an enclosed block.  The
-statement is equivalent to "while (1)".
+statement is equivalent to "while 1".
 
   var i
 
@@ -2339,7 +2335,7 @@ To exit a function without a value, use
 
 The comma operator needs parentheses
 after "return", the same way it does in
-an expression statement:
+an expression statement.
 
   return (new_line(), total)
 
@@ -2413,7 +2409,7 @@ BREAK and CONTINUE example
       }
 
       // stop counting at 20
-      if (words == 20)
+      if  words == 20
         break
 
       while line[i] &&
@@ -2519,6 +2515,7 @@ POSTFIX
   f()             // call
   arr[i][j]       // chained
   f()[0]          // call + idx
+  arr[0]()[f()]   // complex
 
 Indexing is word-scaled.  arr[i] is the
 memory at byte address arr + i * 2.
@@ -2581,8 +2578,8 @@ Example:
     }
   }
 
-Because anonymous functions return an
-address, they can be used in both
+Because anonymous functions return a
+fixed address, they can be used in both
 constant and local expressions.
 
 
@@ -2592,8 +2589,8 @@ Listed from highest to lowest
 precedence.  All are left-associative.
 
   9:        *  /  %       (signed)
-  8:        +  -
-  7:        <<  >>  ~>
+  8:        <<  >>  ~>
+  7:        +  -
   6:        & ^ |
   5:        <  <=  >  >=  (signed)
   4:        ==  !=
@@ -2675,14 +2672,11 @@ inside it) does not need braces.
   /* func chaining */
 
   func greet() put_str("Hello!"),
-    farewell()
-    {
-      // do something
-    }
+       farewell() put_str("Goodbye.")
 
 In the next example, should the comma
 after a + b expect another expression,
-or is it a separator between func
+or is it a separator between function
 declarations?
 
   func add(a, b) return a + b,
@@ -2690,7 +2684,7 @@ declarations?
 
 In the example below, an outer function
 declares two inner functions.  No braces
-are needed because "a, " is not
+are needed because the comma is not
 evaluated as a binary expression.
 
   func split_word()
@@ -2699,8 +2693,8 @@ evaluated as a binary expression.
 
 A function whose body is just a local
 variable declaration has no real use on
-its own (unless the initializer calls a
-function for its side effects.)  Any
+its own unless the initializer calls a
+function for its side effects.  Any
 comma following the var declaration
 would expect another named integer
 variable.
@@ -2716,7 +2710,7 @@ variable.
 So why the confusion?  What purpose does
 the comma have as an operator if all it
 does is discard the left-most values in
-the list?  The reason is that it allows
+a list?  The reason is that it allows
 the programmer to inject side effects
 into a single expression.  Consider the
 following example.
@@ -2772,10 +2766,11 @@ compared to:
 
 There are always workarounds.  The
 function "new_command" could simply
-return str[0], but the option to include
-multiple functions in one expression can
-provide a viable solution despite the
-confusion it sometimes creates.
+return str[0], too, but the option to
+include multiple functions in one
+expression can provide a viable solution
+despite the confusion it sometimes
+creates.
 
 
 SHIFT
@@ -2791,7 +2786,7 @@ COMPARISON AND LOGICAL
 
 Comparison and equality operators yield
 0 or 1.  Logical or (||) and logical and
-(&&) short-circuit, logical xor (^^)
+(&&) short circuit, logical xor (^^)
 does not.
 
 
@@ -3086,10 +3081,10 @@ already.
 BREAK AND CONTINUE PLACEMENT
 
 "break" and "continue" are only valid
-inside a "while" or "do-while" loop
-body.  A nested function declaration
-inside a while or do-while loop must
-also contain its own loop.
+inside a "loop", "while" or "do-while"
+loop body.  A nested function
+declaration inside a while or do-while
+loop must also contain its own loop.
 
   func poll()
   {
@@ -3164,7 +3159,7 @@ ________________________________________
 ________________________________________
 
 The Nine programming language has no
-built-in system call keyword.  Instead
+builtin system call keyword.  Instead
 a "stub" is used, which is just an array
 whose values are "opcodes," and is then
 called like an ordinary function.
@@ -3597,7 +3592,7 @@ doubling is automatic.
 
     while src[i] {
       let dst[i] = src[i]
-      let i = i + 1
+      inc i
     }
     let dst[i] = 0
   }
@@ -3780,8 +3775,9 @@ This method is obviously not perfect.
 There is no debugging line information
 placed alongside code during the
 compiling phase.  Printing addresses or
-scattering halts should give a fair idea
-of where the runtime originated.
+scattering halts in suspect areas should
+give some idea of where a runtime error
+originated.
 
 The code generated from named functions
 is stored in the "code" memory area, and
@@ -3792,9 +3788,9 @@ arrays (where opcodes may be) all reside
 in "data" memory.
 
 Other errors form when certain limits
-are reached.  The snipped below is an
-example of how "deep" nested functions,
-statements and expression can go.
+are reached.   Below is an example of
+how "deep" nested functions, statements
+and expression can go.
 
 var f0 = +++++++func ()
 {
@@ -3828,7 +3824,7 @@ levels deep, not including its parent
 function.
 
 Adding another plus (+) to the series of
-plusses halts with the error:
+pluses halts with the error:
 
   too many nested expressions
 
@@ -3874,164 +3870,203 @@ ________________________________________
  PART 12    OPCODES
 ________________________________________
 
-#00 NOP
-(no operation)
 
-#01 SYS u8
-(system call)
+LEGEND
 
-#02 PUSHA
-(push accumulator)
+ACC
+The accumulator
 
-#03 PUSHI8 u8
-(push immediate 8-bit)
+M[a]
+The 16-bit word in memory at byte
+address a
 
-#04 PUSHI16 u16
-(push immediate 16-bit)
+D[n]
+Display register n
 
-#05 INDEX
-(index array)
+PUSH(x) POP()
+Push / pop one 16-bit word on the stack
 
-#06 LOADA u16 u8
-(load address)
+x <- y
+Assignment: y is stored into x
 
-#07 LOAD
-(load from memory)
+imm8 imm16
+Immediate operand encoded in the
+instruction stream
 
-#08 LOADG u16
-(load global)
+rel16
+Signed 16-bit relative branch
+displacement
 
-#09 LOADI u16
-(load immediate)
+off16
+Signed 16-bit frame offset
 
-#0A LOADL u16 u8
-(load local)
+disp8
+Display (lexical level) selector
 
-#0B STORE
-(store to memory)
 
-#0C CALL u8
-(call function)
+DESCRIPTION
 
-#0D ENTER u8 u8 u16
-(enter function stack frame)
+Opcode# Memonic Parameters
+Description
 
-#0E LEAVE u8 u8
-(leave function stack frame / return)
+00 NOP
+no operation
 
-#0F RETURN u8 u8
-(leave function with value)
+01 SYS     disp8
+system call
 
-#10 JUMP u16
-(relative jump unconditionally)
+02 PUSHA
+PUSH(ACC)
 
-#11 JUMPZ u16
-(relative jump if zero)
+03 PUSHI8  imm8
+PUSH(imm8)
 
-#12 JUMPNZ u16
-(relative jump if not zero)
+04 PUSHI16 imm16
+PUSH(imm16)
 
-#13 COPY u16 u8 u16
-(copy / duplicate top of stack)
+05 INDEX
+ACC <- POP() + ACC * 2
 
-#14 ZERO u16 u8 u16
-(zero top of stack)
+06 LOAD
+ACC <- M[ACC]
 
-#15 CLEAR
-(clear / zero accumulator)
+07 LOADA   off16, disp8
+ACC <- D[disp8] + off16
 
-#16 POS
-(positive)
+08 LOADG   addr16
+ACC <- M[addr16]
 
-#17 NEG
-(arithmetic negate / two's complement)
+09 LOADI   imm16
+ACC <- imm16
 
-#18 COM
-(bitwise complement / one's complement)
+0A LOADL   off16, disp8
+ACC <- M[D[disp8] + off16]
 
-#19 NOT
-(logical not)
+0B STORE
+M[POP()] <- ACC
 
-#1A BOOL
-(convert to boolean value)
+0C CALL    nargs8
+call subroutine
 
-#1B BSWAP
-(swap high/low bytes in 16-bit word)
+0D ENTER   nparams8, disp8, sz16
+enter frame
 
-#1C INC
-(increment)
+0E LEAVE   nparams8, disp8
+leave frame
 
-#1D DEC
-(decrement)
+0F RETURN  nparams8, disp8
+return from subroutine
 
-#1E DISC
-(discard left expression)
+10 JUMP    rel16
+IP <- IP + rel16
 
-#1F LOR
-(logical OR)
+11 JUMPZ   rel16
+branch if ACC == 0
 
-#20 LXOR
-(logical XOR)
+12 JUMPNZ  rel16
+branch if ACC != 0
 
-#21 LAND
-(logical AND)
+13 COPY    off16, disp8, sz16
+copy local block to stack
 
-#22 CMPEQ
-(compare equal)
+14 ZERO    off16, disp8, sz16
+zero local block
 
-#23 CMPNE
-(compare not equal)
+15 CLEAR
+ACC <- 0
 
-#24 CMPLT
-(compare less than)
+16 POS
+no operation (unary +)
 
-#25 CMPLE
-(compare less than or equal)
+17 NEG
+ACC <- -ACC
 
-#26 CMPGT
-(compare greater than)
+18 COM
+ACC <- ~ACC
 
-#27 CMPGE
-(compare greater than or equal)
+19 NOT
+ACC <- (ACC == 0)
 
-#28 OR
-(bitwise OR)
+1A BOOL
+ACC <- (ACC != 0)
 
-#29 XOR
-(bitwise XOR)
+1B BSWAP
+swap high/low bytes of ACC
 
-#2A AND
-(bitwise AND)
+1C INC
+M[ACC] <- M[ACC] + 1
 
-#2B SHL
-(shift left logical)
+1D DEC
+M[ACC] <- M[ACC] - 1
 
-#2C SHR
-(shift right logical)
+1E DISC
+POP() and discard
 
-#2D ASR
-(arithmetic shift right)
+1F LOR
+ACC <- POP() || ACC
 
-#2E ADD
-(addition)
+20 LXOR
+ACC <- POP() ^^ ACC
 
-#2F SUB
-(subtraction)
+21 LAND
+ACC <- POP() && ACC
 
-#30 MUL
-(multiplication)
+22 CMPEQ
+ACC <- POP() == ACC
 
-#31 DIV
-(division)
+23 CMPNE
+ACC <- POP() != ACC
 
-#32 MOD
-(modulo / remainder)
+24 CMPLT
+ACC <- POP() <  ACC
 
-#33 HALT
-(halt execution)
+25 CMPLE
+ACC <- POP() <= ACC
 
-#34 to #FF
-(Invalid opcode)
+26 CMPGT
+ACC <- POP() >  ACC
+
+27 CMPGE
+ACC <- POP() >= ACC
+
+28 OR
+ACC <- POP() | ACC
+
+29 XOR
+ACC <- POP() ^ ACC
+
+2A AND
+ACC <- POP() & ACC
+
+2B ADD
+ACC <- POP() + ACC
+
+2C SUB
+ACC <- POP() - ACC
+
+2D SHL
+ACC <- POP() << (ACC & 15)
+
+2E SHR
+ACC <- POP() >> (ACC & 15) logical
+
+2F ASR
+ACC <- POP() >> (ACC & 15) arith.
+
+30 MUL
+ACC <- POP() * ACC
+
+31 DIV
+ACC <- POP() / ACC
+
+32 MOD
+ACC <- POP() % ACC
+
+33 HALT
+stop execution
+
+34..FF
+reserved / invalid opcode
 
 
 ________________________________________
@@ -5043,13 +5078,6 @@ func square(n) {
   return n * n
 }
 
-OPTIONAL VAR PLACEMENT
-
-func var square(var n) {
-  return n * n
-}
-/* same as above - only var exists */
-
 ONE-LINER BODIES
 
 func square(n) return n * n
@@ -5179,8 +5207,8 @@ PRECEDENCE, HIGH TO LOW
 ()  []              highest
 + - & ~ ! ? @ func  (unary)
 *  /  %
-+  -
 <<  >>  ~>
++  -
 &  ^  |
 <  <=  >  >=
 ==  !=
