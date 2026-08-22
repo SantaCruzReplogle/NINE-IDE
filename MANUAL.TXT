@@ -1,7 +1,7 @@
 
                   Nine
    Integrated Development Environment
-              Version 1.12
+              Version 1.14
 
         TEXT EDITOR AND LANGUAGE
             REFERENCE MANUAL
@@ -821,10 +821,10 @@ occurred.
 SIDE EFFECTS
 
 ^K R and ^K T reset the clipboard and
-undo buffers (see Parts 7 and 8) if
-temporary space in the text memory area
-is not available.  The clipboard and
-undo buffers use code memory as storage.
+undo buffers if temporary space in the
+text memory area is not available (see
+Parts 7 and 8).  The clipboard and undo
+buffers use code memory as storage.
 Before compiling begins, the IDE tries
 to preserve them by moving a compressed
 version of each into leftover text
@@ -832,8 +832,8 @@ memory with priority given to the
 clipboard.  Two prompts appear if either
 cannot fit.
 
-  Erase clipboard?
-  Erase undo?
+  Discard clipboard?
+  Discard undo?
 
 Pressing any key but 'Y' aborts the
 compile or run, and both erasures (even
@@ -4018,6 +4018,7 @@ EXPRESSIONS AND STATEMENTS
   empty subscript
   expression expected
   invalid array size
+  invalid assignment
   invalid declaration
   jump outside loop
   lvalue required
@@ -4261,9 +4262,8 @@ PUSH(imm8)
 04 PUSHI16 imm16
 PUSH(imm16)
 
-05 LPUSH
-ACC = M[ACC]
-PUSH(ACC)
+05 LPUSH16
+PUSH(M[ACC])
 
 06 INDEX
 ACC <- POP() + ACC * 2
